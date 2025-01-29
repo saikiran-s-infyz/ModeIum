@@ -24,6 +24,7 @@ export async function POST(request: Request) {
 
     return response
   } catch (error) {
+    console.log(error)
     return NextResponse.json({ error: 'Failed to set cookie' }, { status: 500 })
   }
 }

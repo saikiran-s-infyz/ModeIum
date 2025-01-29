@@ -39,10 +39,16 @@ const LoginPage = () => {
         // Redirect to chat interface instead of root
         router.push('/chat');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Google sign-in error:', error);
-      setError(error.message || 'Failed to sign in with Google. Please try again.');
-    } finally {
+      
+      // Type guard to check if error is an object with a message property
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to sign in with Google. Please try again.';
+      
+      setError(errorMessage);
+    }finally {
       setIsLoading(false);
     }
   };

@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, signOut } from "firebase/auth";
+import { getAnalytics, Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAgin-fmK8AlP5fOAoCis1KrebXab-JcBI",
@@ -30,10 +31,12 @@ export const signOutUser = async () => {
 };
 
 // Initialize Analytics only in browser and after window is loaded
-let analytics = null;
+
+
+let analytics: Analytics | null = null;
+
 if (typeof window !== 'undefined') {
   window.onload = () => {
-    const { getAnalytics } = require('firebase/analytics');
     analytics = getAnalytics(app);
   };
 }
