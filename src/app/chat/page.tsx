@@ -27,8 +27,9 @@ const availableModels: AIModel[] = [
   { name: 'GPT-4', requiresAPIKey: true },
   { name: 'Claude', requiresAPIKey: true },
   { name: 'Gemini', requiresAPIKey: true },
-  { name: 'DeepSeek R1 (No API Key Needed...)', requiresAPIKey: false },
-  { name: 'Llama3 (No API Key Needed...)', requiresAPIKey: false }
+  { name: 'DeepSeek R1', requiresAPIKey: false },
+  { name: 'Llama 90b Vision Preview', requiresAPIKey: false },
+  { name: 'Gamma', requiresAPIKey: false }
 ];
 
 
@@ -50,7 +51,7 @@ const checkForFounderQuestion = (message: string): string | null => {
     message.toLowerCase().includes(pattern)
   );
 
-  return isFounderQuestion ? "Software Engineer from Infyz Solutions" : null;
+  return isFounderQuestion ? "Software Engineer" : null;
 };
 
 const WelcomeMessage = () => {
@@ -192,12 +193,12 @@ export default function Home() {
       alert('Please provide a message or a file.');
       return;
     }
-
+  
     if (selectedModel.requiresAPIKey && !isApiKeySubmitted) {
       alert('Please submit your API key first.');
       return;
     }
-
+  
     // Check for founder-related questions
     const founderResponse = checkForFounderQuestion(inputMessage);
     if (founderResponse) {
@@ -211,22 +212,22 @@ export default function Home() {
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
-
+  
     setIsLoading(true);
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
-
+  
     const formData = new FormData();
     if (inputMessage.trim()) formData.append('message', inputMessage.trim());
     if (selectedFile) formData.append('file', selectedFile);
     if (apiKey.trim()) formData.append('apiKey', apiKey.trim());
-
+  
     try {
       // First, immediately add user's message to chat
       if (inputMessage.trim()) {
         setMessages(prev => [...prev, { content: inputMessage, sender: 'user', type: 'text' }]);
       }
-
+  
       // Add user's image if exists
       if (selectedFile && selectedFile.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -246,26 +247,34 @@ export default function Home() {
           reader.readAsDataURL(selectedFile);
         });
       }
-
+  
       // Clear input and file
       setInputMessage('');
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-
-      // Then make the API call
-      const endpoint = selectedFile ? '/api/message/file' : '/api/only_message';
+  
+      // Generate endpoint based on selected model and file status
+      const modelSlug = selectedModel.name
+        .toLowerCase()
+        .replace(/\s+\(.*\)/, '')
+        .replace(/\s+/g, '');
+  
+      const endpoint = selectedFile 
+        ? `/api/message/${modelSlug}/file` 
+        : `/api/message/${modelSlug}/only_message`;
+  
       const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
         signal,
       });
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const responseData = await response.json();
-
+  
       if (responseData.botResponse) {
         // Only add bot's response
         setMessages(prev => [...prev, { 
